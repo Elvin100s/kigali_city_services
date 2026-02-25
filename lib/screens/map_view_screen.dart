@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/listings_provider.dart';
 import '../models/listing_model.dart';
-import 'listing_detail_screen.dart';
 
 class MapViewScreen extends StatelessWidget {
   const MapViewScreen({super.key});
