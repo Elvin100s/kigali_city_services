@@ -48,7 +48,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              value: _category,
+              initialValue: _category,
               decoration: const InputDecoration(labelText: 'Category', border: OutlineInputBorder()),
               items: ['Restaurant', 'Hospital', 'School', 'Hotel', 'Shop', 'Bank', 'Other']
                   .map((c) => DropdownMenuItem(value: c, child: Text(c)))
