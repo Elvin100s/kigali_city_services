@@ -18,7 +18,10 @@ class _MapViewScreenState extends State<MapViewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Map View')),
+      appBar: AppBar(
+        title: const Text('Map View'),
+        backgroundColor: Colors.blue.shade700,
+      ),
       body: StreamBuilder<List<ListingModel>>(
         stream: context.read<ListingsProvider>().listingsStream,
         builder: (context, snapshot) {

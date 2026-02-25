@@ -9,19 +9,38 @@ class DirectoryScreen extends StatelessWidget {
 
   static const categories = ['All', 'Restaurant', 'Hospital', 'School', 'Hotel', 'Shop', 'Bank', 'Other'];
 
+  IconData _getCategoryIcon(String category) {
+    switch (category) {
+      case 'Restaurant': return Icons.restaurant;
+      case 'Hospital': return Icons.local_hospital;
+      case 'School': return Icons.school;
+      case 'Hotel': return Icons.hotel;
+      case 'Shop': return Icons.shopping_bag;
+      case 'Bank': return Icons.account_balance;
+      default: return Icons.place;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Directory')),
+      appBar: AppBar(
+        title: const Text('Directory'),
+        elevation: 0,
+        backgroundColor: Colors.blue.shade700,
+      ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
+          Container(
+            color: Colors.blue.shade700,
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: TextField(
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Search by name...',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.search),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
               ),
               onChanged: (v) => context.read<ListingsProvider>().setSearchQuery(v),
             ),
@@ -39,6 +58,9 @@ class DirectoryScreen extends StatelessWidget {
                       child: FilterChip(
                         label: Text(cat),
                         selected: isSelected,
+                        selectedColor: Colors.blue.shade700,
+                        backgroundColor: Colors.grey.shade200,
+                        labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.black),
                         onSelected: (_) => provider.setCategory(cat),
                       ),
                     );
@@ -60,16 +82,34 @@ class DirectoryScreen extends StatelessWidget {
                       return const Center(child: Text('No listings found'));
                     }
                     return ListView.builder(
+                      padding: const EdgeInsets.all(16),
                       itemCount: snapshot.data!.length,
                       itemBuilder: (context, index) {
                         final listing = snapshot.data![index];
-                        return ListTile(
-                          title: Text(listing.name),
-                          subtitle: Text('${listing.category} • ${listing.address}'),
-                          trailing: const Icon(Icons.chevron_right),
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => ListingDetailScreen(listing: listing)),
+                        return Card(
+                          elevation: 2,
+                          margin: const EdgeInsets.only(bottom: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.all(16),
+                            leading: CircleAvatar(
+                              backgroundColor: Colors.blue.shade100,
+                              child: Icon(_getCategoryIcon(listing.category), color: Colors.blue.shade700),
+                            ),
+                            title: Text(listing.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 4),
+                                Text(listing.category),
+                                Text(listing.address, maxLines: 1, overflow: TextOverflow.ellipsis),
+                              ],
+                            ),
+                            trailing: Icon(Icons.chevron_right, color: Colors.blue.shade700),
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => ListingDetailScreen(listing: listing)),
+                            ),
                           ),
                         );
                       },

@@ -17,27 +17,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final user = context.read<AuthProvider>().currentUser;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(
+        title: const Text('Settings'),
+        backgroundColor: Colors.blue.shade700,
+        elevation: 0,
+      ),
       body: ListView(
         children: [
+          Container(
+            color: Colors.blue.shade700,
+            padding: const EdgeInsets.symmetric(vertical: 40),
+            child: Column(
+              children: [
+                CircleAvatar(
+                  radius: 50,
+                  backgroundColor: Colors.white,
+                  child: Text(user?.email?[0].toUpperCase() ?? 'U', style: TextStyle(fontSize: 40, color: Colors.blue.shade700)),
+                ),
+                const SizedBox(height: 16),
+                Text(user?.email ?? '', style: const TextStyle(fontSize: 18, color: Colors.white)),
+              ],
+            ),
+          ),
           const SizedBox(height: 20),
-          CircleAvatar(
-            radius: 50,
-            child: Text(user?.email?[0].toUpperCase() ?? 'U', style: const TextStyle(fontSize: 40)),
+          Card(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: SwitchListTile(
+              title: const Text('Enable Notifications'),
+              subtitle: const Text('Receive updates about new listings'),
+              value: _notificationsEnabled,
+              activeColor: Colors.blue.shade700,
+              onChanged: (v) => setState(() => _notificationsEnabled = v),
+            ),
           ),
-          const SizedBox(height: 16),
-          Text(user?.email ?? '', textAlign: TextAlign.center, style: const TextStyle(fontSize: 18)),
-          const Divider(height: 40),
-          SwitchListTile(
-            title: const Text('Enable Notifications'),
-            value: _notificationsEnabled,
-            onChanged: (v) => setState(() => _notificationsEnabled = v),
-          ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text('Logout', style: TextStyle(color: Colors.red)),
-            onTap: () => context.read<AuthProvider>().signOut(),
+          const SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: ElevatedButton.icon(
+              onPressed: () => context.read<AuthProvider>().signOut(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              icon: const Icon(Icons.logout),
+              label: const Text('Logout'),
+            ),
           ),
         ],
       ),

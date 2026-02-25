@@ -32,7 +32,10 @@ class _EditListingScreenState extends State<EditListingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Edit Listing')),
+      appBar: AppBar(
+        title: const Text('Edit Listing'),
+        backgroundColor: Colors.blue.shade700,
+      ),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -72,20 +75,28 @@ class _EditListingScreenState extends State<EditListingScreen> {
               validator: (v) => v!.isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () async {
-                if (_formKey.currentState!.validate()) {
-                  await context.read<ListingsProvider>().updateListing(widget.listing.id!, {
-                    'name': _nameController.text,
-                    'category': _category,
-                    'description': _descController.text,
-                    'address': _addressController.text,
-                    'phoneNumber': _phoneController.text,
-                  });
-                  if (context.mounted) Navigator.pop(context);
-                }
-              },
-              child: const Text('Update Listing'),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () async {
+                  if (_formKey.currentState!.validate()) {
+                    await context.read<ListingsProvider>().updateListing(widget.listing.id!, {
+                      'name': _nameController.text,
+                      'category': _category,
+                      'description': _descController.text,
+                      'address': _addressController.text,
+                      'phoneNumber': _phoneController.text,
+                    });
+                    if (context.mounted) Navigator.pop(context);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue.shade700,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Update Listing', style: TextStyle(fontSize: 16)),
+              ),
             ),
           ],
         ),

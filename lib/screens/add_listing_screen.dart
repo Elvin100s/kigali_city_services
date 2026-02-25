@@ -35,7 +35,10 @@ class _AddListingScreenState extends State<AddListingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Listing')),
+      appBar: AppBar(
+        title: const Text('Add Listing'),
+        backgroundColor: Colors.blue.shade700,
+      ),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -89,25 +92,33 @@ class _AddListingScreenState extends State<AddListingScreen> {
               validator: (v) => v!.isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () async {
-                if (_formKey.currentState!.validate()) {
-                  final listing = ListingModel(
-                    name: _nameController.text,
-                    category: _category,
-                    description: _descController.text,
-                    address: _addressController.text,
-                    phoneNumber: _phoneController.text,
-                    latitude: double.parse(_latController.text),
-                    longitude: double.parse(_lngController.text),
-                    createdBy: context.read<AuthProvider>().currentUser!.uid,
-                    createdAt: DateTime.now(),
-                  );
-                  await context.read<ListingsProvider>().createListing(listing);
-                  if (context.mounted) Navigator.pop(context);
-                }
-              },
-              child: const Text('Add Listing'),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () async {
+                  if (_formKey.currentState!.validate()) {
+                    final listing = ListingModel(
+                      name: _nameController.text,
+                      category: _category,
+                      description: _descController.text,
+                      address: _addressController.text,
+                      phoneNumber: _phoneController.text,
+                      latitude: double.parse(_latController.text),
+                      longitude: double.parse(_lngController.text),
+                      createdBy: context.read<AuthProvider>().currentUser!.uid,
+                      createdAt: DateTime.now(),
+                    );
+                    await context.read<ListingsProvider>().createListing(listing);
+                    if (context.mounted) Navigator.pop(context);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue.shade700,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Add Listing', style: TextStyle(fontSize: 16)),
+              ),
             ),
           ],
         ),
