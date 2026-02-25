@@ -1,19 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import '../providers/listings_provider.dart';
 import '../models/listing_model.dart';
 import 'listing_detail_screen.dart';
 
-class MapViewScreen extends StatefulWidget {
+class MapViewScreen extends StatelessWidget {
   const MapViewScreen({super.key});
-
-  @override
-  State<MapViewScreen> createState() => _MapViewScreenState();
-}
-
-class _MapViewScreenState extends State<MapViewScreen> {
-  GoogleMapController? _controller;
 
   @override
   Widget build(BuildContext context) {
@@ -30,28 +22,28 @@ class _MapViewScreenState extends State<MapViewScreen> {
           }
 
           final listings = snapshot.data!;
-          final markers = listings.map((listing) {
-            return Marker(
-              markerId: MarkerId(listing.id ?? ''),
-              position: LatLng(listing.latitude, listing.longitude),
-              infoWindow: InfoWindow(
-                title: listing.name,
-                snippet: listing.category,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => ListingDetailScreen(listing: listing)),
-                ),
-              ),
-            );
-          }).toSet();
 
-          return GoogleMap(
-            initialCameraPosition: const CameraPosition(
-              target: LatLng(-1.9441, 30.0619),
-              zoom: 12,
+          return Container(
+            color: Colors.grey.shade300,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.map, size: 100, color: Colors.grey.shade600),
+                const SizedBox(height: 24),
+                Text('Map View', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.grey.shade700)),
+                const SizedBox(height: 16),
+                Text('${listings.length} listings available', style: TextStyle(fontSize: 18, color: Colors.grey.shade600)),
+                const SizedBox(height: 32),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Text(
+                    'Add Google Maps API key to view interactive map',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey.shade600),
+                  ),
+                ),
+              ],
             ),
-            markers: markers,
-            onMapCreated: (controller) => _controller = controller,
           );
         },
       ),
