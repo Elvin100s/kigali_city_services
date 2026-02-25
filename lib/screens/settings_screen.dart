@@ -46,7 +46,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               title: const Text('Enable Notifications'),
               subtitle: const Text('Receive updates about new listings'),
               value: _notificationsEnabled,
-              activeColor: Colors.blue.shade700,
+              activeThumbColor: Colors.blue.shade700,
               onChanged: (v) => setState(() => _notificationsEnabled = v),
             ),
           ),
