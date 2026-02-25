@@ -1,0 +1,49 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/listing_model.dart';
+import '../models/user_model.dart';
+
+class FirestoreService {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  Stream<List<ListingModel>> getListingsStream() {
+    return _firestore
+        .collection('listings')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => ListingModel.fromFirestore(doc)).toList());
+  }
+
+  Stream<List<ListingModel>> getUserListingsStream(String userId) {
+    return _firestore
+        .collection('listings')
+        .where('createdBy', isEqualTo: userId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => ListingModel.fromFirestore(doc)).toList());
+  }
+
+  Future<String> createListing(ListingModel listing) async {
+    final docRef = await _firestore.collection('listings').add(listing.toFirestore());
+    return docRef.id;
+  }
+
+  Future<void> updateListing(String id, Map<String, dynamic> data) async {
+    data['updatedAt'] = Timestamp.now();
+    await _firestore.collection('listings').doc(id).update(data);
+  }
+
+  Future<void> deleteListing(String id) async {
+    await _firestore.collection('listings').doc(id).delete();
+  }
+
+  Future<void> createUserProfile(UserModel user) async {
+    await _firestore.collection('users').doc(user.uid).set(user.toFirestore());
+  }
+
+  Future<UserModel?> getUserProfile(String uid) async {
+    final doc = await _firestore.collection('users').doc(uid).get();
+    return doc.exists ? UserModel.fromFirestore(doc) : null;
+  }
+}
