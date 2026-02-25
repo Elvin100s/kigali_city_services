@@ -72,6 +72,10 @@ class DirectoryScreen extends StatelessWidget {
           Expanded(
             child: Consumer<ListingsProvider>(
               builder: (context, provider, _) {
+                if (provider.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                
                 return StreamBuilder<List<ListingModel>>(
                   stream: provider.getFilteredListingsStream(),
                   builder: (context, snapshot) {

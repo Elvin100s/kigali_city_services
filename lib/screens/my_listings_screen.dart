@@ -18,15 +18,21 @@ class MyListingsScreen extends StatelessWidget {
         title: const Text('My Listings'),
         backgroundColor: Colors.blue.shade700,
       ),
-      body: StreamBuilder<List<ListingModel>>(
-        stream: context.read<ListingsProvider>().getUserListingsStream(userId),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+      body: Consumer<ListingsProvider>(
+        builder: (context, provider, _) {
+          if (provider.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No listings yet. Add your first!'));
-          }
+          
+          return StreamBuilder<List<ListingModel>>(
+            stream: provider.getUserListingsStream(userId),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(child: Text('No listings yet. Add your first!'));
+              }
           return ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: snapshot.data!.length,
