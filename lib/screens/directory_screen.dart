@@ -72,15 +72,14 @@ class DirectoryScreen extends StatelessWidget {
           Expanded(
             child: Consumer<ListingsProvider>(
               builder: (context, provider, _) {
-                if (provider.isLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                
                 return StreamBuilder<List<ListingModel>>(
                   stream: provider.getFilteredListingsStream(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
                     }
                     if (!snapshot.hasData || snapshot.data!.isEmpty) {
                       return const Center(child: Text('No listings found'));

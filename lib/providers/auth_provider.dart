@@ -2,16 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
 import '../services/firestore_service.dart';
+import '../services/email_otp_service.dart';
 import '../models/user_model.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
   final FirestoreService _firestoreService = FirestoreService();
+  final EmailOtpService _otpService = EmailOtpService();
   bool _isLoading = false;
   String? _error;
+  bool _otpSent = false;
 
   bool get isLoading => _isLoading;
   String? get error => _error;
+  bool get otpSent => _otpSent;
   User? get currentUser => _authService.currentUser;
   Stream<User?> get authStateChanges => _authService.authStateChanges;
 
@@ -29,7 +33,47 @@ class AuthProvider extends ChangeNotifier {
           displayName: displayName,
           createdAt: DateTime.now(),
         ));
+        // Send OTP instead of email verification
+        await _otpService.sendOtpToEmail(email);
+        _otpSent = true;
       }
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> verifyOtp(String email, String otp) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final isValid = await _otpService.verifyOtp(email, otp);
+      if (isValid && currentUser != null) {
+        await _otpService.markUserAsVerified(currentUser!.uid);
+        return true;
+      }
+      _error = 'Invalid or expired code';
+      return false;
+    } catch (e) {
+      _error = e.toString();
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> resendOtp(String email) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await _otpService.sendOtpToEmail(email);
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -55,11 +99,18 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> signOut() async {
     await _authService.signOut();
+    _otpSent = false;
     notifyListeners();
   }
 
-  Future<void> reloadUser() async {
-    await _authService.reloadUser();
-    notifyListeners();
+  Future<bool> isUserVerified() async {
+    if (currentUser == null) return false;
+    
+    try {
+      final doc = await _firestoreService.getUserProfile(currentUser!.uid);
+      return doc?['emailVerified'] ?? false;
+    } catch (e) {
+      return false;
+    }
   }
 }

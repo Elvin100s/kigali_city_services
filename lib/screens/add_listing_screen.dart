@@ -98,14 +98,22 @@ class _AddListingScreenState extends State<AddListingScreen> {
               child: ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
+                    final lat = double.tryParse(_latController.text);
+                    final lng = double.tryParse(_lngController.text);
+                    if (lat == null || lng == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Invalid coordinates')),
+                      );
+                      return;
+                    }
                     final listing = ListingModel(
                       name: _nameController.text,
                       category: _category,
                       description: _descController.text,
                       address: _addressController.text,
                       phoneNumber: _phoneController.text,
-                      latitude: double.parse(_latController.text),
-                      longitude: double.parse(_lngController.text),
+                      latitude: lat,
+                      longitude: lng,
                       createdBy: context.read<AuthProvider>().currentUser!.uid,
                       createdAt: DateTime.now(),
                     );

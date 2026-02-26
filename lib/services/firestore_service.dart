@@ -42,8 +42,8 @@ class FirestoreService {
     await _firestore.collection('users').doc(user.uid).set(user.toFirestore());
   }
 
-  Future<UserModel?> getUserProfile(String uid) async {
+  Future<Map<String, dynamic>?> getUserProfile(String uid) async {
     final doc = await _firestore.collection('users').doc(uid).get();
-    return doc.exists ? UserModel.fromFirestore(doc) : null;
+    return doc.exists ? doc.data() : null;
   }
 }

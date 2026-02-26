@@ -1,112 +1,262 @@
 # Kigali City Services & Places Directory
 
-A Flutter mobile application for discovering and navigating to services and places in Kigali, Rwanda.
+A modern Flutter mobile application that helps Kigali residents locate and navigate to essential public services and leisure locations including hospitals, police stations, libraries, restaurants, cafés, parks, and tourist attractions.
 
-## Features
+## 🎯 Features
 
-- **Authentication**: Email/password signup with email verification
-- **CRUD Operations**: Create, read, update, and delete service listings
-- **Search & Filter**: Search by name and filter by category
-- **Google Maps Integration**: View listings on map with directions
-- **Real-time Updates**: Firestore real-time data synchronization
-- **Clean Architecture**: Service layer separation with Provider state management
+### Authentication
+- **Firebase Authentication** with email and password
+- **Email OTP Verification** - 6-digit code sent to user's email for verification
+- Secure user profile management in Firestore
+- Session persistence
 
-## Tech Stack
+### Service Listings (CRUD Operations)
+- **Create** new service/place listings with complete details
+- **Read** all listings in a shared directory with real-time updates
+- **Update** your own listings
+- **Delete** your own listings
+- Each listing includes:
+  - Place/Service Name
+  - Category (Hospital, Police Station, Library, Restaurant, Café, Park, Tourist Attraction)
+  - Address
+  - Contact Number
+  - Description
+  - Geographic Coordinates (Latitude & Longitude)
+  - Creator UID and Timestamp
 
-- Flutter 3.0+
-- Firebase Authentication
-- Cloud Firestore
-- Google Maps Flutter
-- Provider (State Management)
+### Search & Filter
+- **Search by name** - Dynamic search across all listings
+- **Filter by category** - Quick category-based filtering
+- Real-time results update as Firestore data changes
 
-## Setup Instructions
+### Map Integration
+- Interactive map view using flutter_map
+- Location markers for all services
+- Detailed view with embedded map for each listing
+- Turn-by-turn navigation support via url_launcher
 
-### Prerequisites
+### Navigation
+Bottom navigation bar with 4 main screens:
+- **Directory** - Browse all listings
+- **My Listings** - Manage your own listings
+- **Map View** - See all locations on map
+- **Settings** - User profile and preferences
 
-- Flutter SDK installed
-- Firebase account
-- Google Cloud Console account (for Maps API)
+## 🎨 Design
 
-### Firebase Setup
+### Modern UI Theme
+- **Futuristic purple gradient** design (#6C63FF primary color)
+- Clean, minimalist interface with glassmorphism effects
+- Consistent spacing and typography system
+- Smooth animations and transitions
+- Material 3 design principles
 
-1. Create a Firebase project at https://console.firebase.google.com
-2. Enable Authentication (Email/Password)
-3. Create Firestore Database
-4. Install FlutterFire CLI:
-   ```bash
-   dart pub global activate flutterfire_cli
-   ```
-5. Configure Firebase:
-   ```bash
-   flutterfire configure
-   ```
+## 🏗️ Architecture
 
-### Google Maps Setup
+### State Management
+- **Provider** pattern for state management
+- Clean separation between UI and business logic
+- Dedicated service layer for Firebase operations
 
-1. Enable Maps SDK for Android/iOS in Google Cloud Console
-2. Get API key
-3. Add to `android/app/src/main/AndroidManifest.xml`:
-   ```xml
-   <meta-data android:name="com.google.android.geo.API_KEY"
-              android:value="YOUR_API_KEY"/>
-   ```
-4. Add to `ios/Runner/AppDelegate.swift`:
-   ```swift
-   GMSServices.provideAPIKey("YOUR_API_KEY")
-   ```
-
-### Installation
-
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   flutter pub get
-   ```
-3. Run the app:
-   ```bash
-   flutter run
-   ```
-
-## Project Structure
-
+### Project Structure
 ```
 lib/
-├── models/           # Data models
-├── services/         # Firebase services
-├── providers/        # State management
+├── models/           # Data models (ListingModel, UserModel)
+├── providers/        # State management (AuthProvider, ListingsProvider)
 ├── screens/          # UI screens
+├── services/         # Firebase services (Auth, Firestore, OTP)
+├── theme/            # App theme and styling constants
 ├── widgets/          # Reusable widgets
 └── main.dart         # App entry point
 ```
 
-## Firestore Security Rules
+## 🔥 Firebase Structure
 
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /users/{userId} {
-      allow read, write: if request.auth.uid == userId;
-    }
-    match /listings/{listingId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null && 
-                      request.resource.data.createdBy == request.auth.uid;
-      allow update, delete: if request.auth.uid == resource.data.createdBy;
-    }
-  }
+### Firestore Collections
+
+#### `users`
+```json
+{
+  "uid": "string",
+  "email": "string",
+  "displayName": "string",
+  "emailVerified": "boolean",
+  "createdAt": "timestamp",
+  "verifiedAt": "timestamp"
 }
 ```
 
-## Usage
+#### `listings`
+```json
+{
+  "name": "string",
+  "category": "string",
+  "description": "string",
+  "address": "string",
+  "latitude": "double",
+  "longitude": "double",
+  "phoneNumber": "string",
+  "createdBy": "string (UID)",
+  "createdAt": "timestamp",
+  "updatedAt": "timestamp"
+}
+```
 
-1. Sign up with email and verify your email
-2. Login to access the app
-3. Browse listings in the Directory tab
-4. Add your own listings in My Listings tab
-5. View all listings on the Map tab
-6. Manage settings and logout in Settings tab
+#### `email_otps`
+```json
+{
+  "otp": "string (6-digit code)",
+  "createdAt": "timestamp",
+  "expiresAt": "timestamp",
+  "verified": "boolean"
+}
+```
 
-## License
+#### `otp_emails`
+```json
+{
+  "to": "string (email)",
+  "subject": "string",
+  "html": "string (email body)",
+  "createdAt": "timestamp"
+}
+```
 
-MIT
+## 🚀 Getting Started
+
+### Prerequisites
+- Flutter SDK (>=3.0.0)
+- Dart SDK
+- Android Studio / VS Code
+- Firebase account
+
+### Installation
+
+1. **Clone the repository**
+```bash
+git clone <your-repo-url>
+cd kigali_city_services
+```
+
+2. **Install dependencies**
+```bash
+flutter pub get
+```
+
+3. **Firebase Setup**
+   - Create a new Firebase project at [Firebase Console](https://console.firebase.google.com)
+   - Enable Firebase Authentication (Email/Password)
+   - Create a Firestore database
+   - Download `google-services.json` (Android) and place in `android/app/`
+   - Run Firebase CLI to generate `firebase_options.dart`:
+   ```bash
+   flutterfire configure
+   ```
+
+4. **Run the app**
+```bash
+flutter run
+```
+
+## 📦 Dependencies
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  firebase_core: ^4.4.0
+  firebase_auth: ^6.1.4
+  cloud_firestore: ^6.1.2
+  provider: ^6.1.1
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.0
+  url_launcher: ^6.2.2
+  intl: ^0.18.1
+```
+
+## 🎓 State Management Approach
+
+### Provider Pattern
+- **AuthProvider** - Manages authentication state, OTP verification, user sessions
+- **ListingsProvider** - Handles CRUD operations, search, and filtering for listings
+
+### Service Layer
+- **AuthService** - Firebase Authentication operations
+- **FirestoreService** - Firestore database operations
+- **EmailOtpService** - OTP generation and verification
+
+### Data Flow
+```
+UI Widget → Provider → Service Layer → Firebase
+                ↓
+         notifyListeners()
+                ↓
+         UI Rebuilds (Consumer/Selector)
+```
+
+## 🔐 Security Features
+
+- Email verification required before app access
+- OTP expires after 10 minutes
+- User can only edit/delete their own listings
+- Firestore security rules enforce user ownership
+- No sensitive data stored locally
+
+## 🧪 Testing on Emulator
+
+### OTP Verification
+Since email links don't work well on emulators, we use OTP codes:
+1. Sign up with any email
+2. Check Firestore `otp_emails` collection for the 6-digit code
+3. Enter the code in the app
+4. Access granted after verification
+
+## 📱 Supported Platforms
+
+- ✅ Android
+- ✅ iOS (with proper Firebase setup)
+- ❌ Web (not optimized for this assignment)
+
+## 🎯 Assignment Requirements Met
+
+- ✅ Firebase Authentication with email verification
+- ✅ Full CRUD operations for listings
+- ✅ Real-time Firestore updates
+- ✅ Search and category filtering
+- ✅ Map integration with navigation
+- ✅ Provider state management
+- ✅ Bottom navigation with 4 screens
+- ✅ Clean architecture with service layer
+- ✅ User profile management
+- ✅ Settings screen with preferences
+
+## 👨‍💻 Development
+
+### Code Quality
+- Clean code architecture
+- Separation of concerns
+- Reusable components
+- Consistent naming conventions
+- Comprehensive error handling
+
+### Performance Optimizations
+- Const constructors where possible
+- Efficient state updates
+- Lazy loading of data
+- Optimized Firestore queries
+
+## 📄 License
+
+This project is created for educational purposes as part of a mobile development course assignment.
+
+## 🤝 Contributing
+
+This is an individual assignment project. Contributions are not accepted.
+
+## 📧 Contact
+
+For questions or issues, please contact through the course platform.
+
+---
+
+**Built with ❤️ using Flutter & Firebase**
