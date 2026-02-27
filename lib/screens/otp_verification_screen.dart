@@ -97,12 +97,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   ),
                   const SizedBox(height: 40),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(6, (index) {
                       final hasValue = _controllers[index].text.isNotEmpty;
                       return Container(
-                        width: 50,
-                        height: 60,
+                        width: 45,
+                        height: 55,
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
                         decoration: BoxDecoration(
                           color: kSurface2,
                           borderRadius: BorderRadius.circular(12),
