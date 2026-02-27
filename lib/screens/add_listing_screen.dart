@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/auth_provider.dart';
 import '../providers/listings_provider.dart';
 import '../models/listing_model.dart';
+import '../widgets/ui_helpers.dart';
 
 class AddListingScreen extends StatefulWidget {
   const AddListingScreen({super.key});
@@ -35,10 +38,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Add Listing'),
-        backgroundColor: Colors.blue.shade700,
-      ),
+      appBar: AppBar(title: const Text('Add Place')),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -46,13 +46,15 @@ class _AddListingScreenState extends State<AddListingScreen> {
           children: [
             TextFormField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Name', border: OutlineInputBorder()),
+              decoration: const InputDecoration(labelText: 'Name'),
               validator: (v) => v!.isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               initialValue: _category,
-              decoration: const InputDecoration(labelText: 'Category', border: OutlineInputBorder()),
+              decoration: const InputDecoration(labelText: 'Category'),
+              dropdownColor: kSurface2,
+              style: GoogleFonts.dmSans(color: kCream),
               items: ['Restaurant', 'Hospital', 'School', 'Hotel', 'Shop', 'Bank', 'Other']
                   .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                   .toList(),
@@ -61,75 +63,71 @@ class _AddListingScreenState extends State<AddListingScreen> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _descController,
-              decoration: const InputDecoration(labelText: 'Description', border: OutlineInputBorder()),
+              decoration: const InputDecoration(labelText: 'Description'),
               maxLines: 3,
               validator: (v) => v!.isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _addressController,
-              decoration: const InputDecoration(labelText: 'Address', border: OutlineInputBorder()),
+              decoration: const InputDecoration(labelText: 'Address'),
               validator: (v) => v!.isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _phoneController,
-              decoration: const InputDecoration(labelText: 'Phone Number', border: OutlineInputBorder()),
+              decoration: const InputDecoration(labelText: 'Phone Number'),
               validator: (v) => v!.isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _latController,
-              decoration: const InputDecoration(labelText: 'Latitude', border: OutlineInputBorder()),
+              decoration: const InputDecoration(labelText: 'Latitude'),
               keyboardType: TextInputType.number,
               validator: (v) => v!.isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _lngController,
-              decoration: const InputDecoration(labelText: 'Longitude', border: OutlineInputBorder()),
+              decoration: const InputDecoration(labelText: 'Longitude'),
               keyboardType: TextInputType.number,
               validator: (v) => v!.isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    final lat = double.tryParse(_latController.text);
-                    final lng = double.tryParse(_lngController.text);
-                    if (lat == null || lng == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Invalid coordinates')),
-                      );
-                      return;
-                    }
-                    final listing = ListingModel(
-                      name: _nameController.text,
-                      category: _category,
-                      description: _descController.text,
-                      address: _addressController.text,
-                      phoneNumber: _phoneController.text,
-                      latitude: lat,
-                      longitude: lng,
-                      createdBy: context.read<AuthProvider>().currentUser!.uid,
-                      createdAt: DateTime.now(),
+            kGradientButton(
+              'Add Listing',
+              () async {
+                if (_formKey.currentState!.validate()) {
+                  final lat = double.tryParse(_latController.text);
+                  final lng = double.tryParse(_lngController.text);
+                  if (lat == null || lng == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Invalid coordinates', style: GoogleFonts.dmSans()),
+                        backgroundColor: kTerra,
+                      ),
                     );
-                    await context.read<ListingsProvider>().createListing(listing);
-                    if (context.mounted) Navigator.pop(context);
+                    return;
                   }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue.shade700,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: const Text('Add Listing', style: TextStyle(fontSize: 16)),
-              ),
+                  final listing = ListingModel(
+                    name: _nameController.text,
+                    category: _category,
+                    description: _descController.text,
+                    address: _addressController.text,
+                    phoneNumber: _phoneController.text,
+                    latitude: lat,
+                    longitude: lng,
+                    createdBy: context.read<AuthProvider>().currentUser!.uid,
+                    createdAt: DateTime.now(),
+                  );
+                  await context.read<ListingsProvider>().createListing(listing);
+                  if (context.mounted) Navigator.pop(context);
+                }
+              },
+              icon: Icons.add_location,
             ),
           ],
-        ),
+        ).animate().fadeIn(duration: 400.ms),
       ),
     );
   }

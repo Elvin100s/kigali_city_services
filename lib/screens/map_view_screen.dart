@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../providers/listings_provider.dart';
 import '../models/listing_model.dart';
+import '../widgets/ui_helpers.dart';
 import 'listing_detail_screen.dart';
 
 class MapViewScreen extends StatefulWidget {
@@ -44,23 +46,47 @@ class _MapViewScreenState extends State<MapViewScreen> {
     final listingsProvider = context.read<ListingsProvider>();
     
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Map View'),
-        backgroundColor: Colors.blue.shade700,
-      ),
+      appBar: AppBar(title: const Text('Map View')),
       body: StreamBuilder<List<ListingModel>>(
         stream: listingsProvider.listingsStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(color: kGreenLight),
+                  const SizedBox(height: 16),
+                  Text('Loading map...', style: GoogleFonts.dmSans(color: kMuted)),
+                ],
+              ),
+            );
           }
           
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, color: kTerra, size: 56),
+                  const SizedBox(height: 16),
+                  Text('Error: ${snapshot.error}', style: GoogleFonts.dmSans(color: kMuted)),
+                ],
+              ),
+            );
           }
           
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No listings available'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.map_outlined, color: kMuted, size: 56),
+                  const SizedBox(height: 16),
+                  Text('No listings available', style: GoogleFonts.dmSans(fontSize: 15, color: kMuted)),
+                ],
+              ),
+            );
           }
 
           final listings = snapshot.data!;

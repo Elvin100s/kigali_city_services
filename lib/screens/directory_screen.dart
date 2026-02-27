@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/listings_provider.dart';
 import '../models/listing_model.dart';
+import '../widgets/ui_helpers.dart';
 import 'listing_detail_screen.dart';
 
 class DirectoryScreen extends StatelessWidget {
@@ -9,38 +12,18 @@ class DirectoryScreen extends StatelessWidget {
 
   static const categories = ['All', 'Restaurant', 'Hospital', 'School', 'Hotel', 'Shop', 'Bank', 'Other'];
 
-  IconData _getCategoryIcon(String category) {
-    switch (category) {
-      case 'Restaurant': return Icons.restaurant;
-      case 'Hospital': return Icons.local_hospital;
-      case 'School': return Icons.school;
-      case 'Hotel': return Icons.hotel;
-      case 'Shop': return Icons.shopping_bag;
-      case 'Bank': return Icons.account_balance;
-      default: return Icons.place;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Directory'),
-        elevation: 0,
-        backgroundColor: Colors.blue.shade700,
-      ),
+      appBar: AppBar(title: const Text('Directory')),
       body: Column(
         children: [
-          Container(
-            color: Colors.blue.shade700,
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          Padding(
+            padding: const EdgeInsets.all(16),
             child: TextField(
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Search by name...',
-                prefixIcon: const Icon(Icons.search),
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                prefixIcon: Icon(Icons.search),
               ),
               onChanged: (v) => context.read<ListingsProvider>().setSearchQuery(v),
             ),
@@ -49,18 +32,18 @@ class DirectoryScreen extends StatelessWidget {
             builder: (context, provider, _) {
               return SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
                   children: categories.map((cat) {
                     final isSelected = provider.selectedCategory == cat;
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: FilterChip(
-                        label: Text(cat),
+                        label: Text(cat, style: GoogleFonts.dmSans(
+                          color: isSelected ? Colors.white : kCream,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                        )),
                         selected: isSelected,
-                        selectedColor: Colors.blue.shade700,
-                        backgroundColor: Colors.grey.shade200,
-                        labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.black),
                         onSelected: (_) => provider.setCategory(cat),
                       ),
                     );
@@ -76,13 +59,34 @@ class DirectoryScreen extends StatelessWidget {
                   stream: provider.getFilteredListingsStream(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
+                      return ListView(
+                        padding: const EdgeInsets.all(16),
+                        children: List.generate(6, (_) => kShimmerCard()),
+                      );
                     }
                     if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.error_outline, color: kTerra, size: 56),
+                            const SizedBox(height: 16),
+                            Text('Error: ${snapshot.error}', style: GoogleFonts.dmSans(color: kMuted)),
+                          ],
+                        ),
+                      );
                     }
                     if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Center(child: Text('No listings found'));
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.search_off, color: kMuted, size: 56),
+                            const SizedBox(height: 16),
+                            Text('No listings found', style: GoogleFonts.dmSans(fontSize: 15, color: kMuted)),
+                          ],
+                        ),
+                      );
                     }
                     return ListView.builder(
                       padding: const EdgeInsets.all(16),
@@ -90,31 +94,45 @@ class DirectoryScreen extends StatelessWidget {
                       itemBuilder: (context, index) {
                         final listing = snapshot.data![index];
                         return Card(
-                          elevation: 2,
-                          margin: const EdgeInsets.only(bottom: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           child: ListTile(
-                            contentPadding: const EdgeInsets.all(16),
-                            leading: CircleAvatar(
-                              backgroundColor: Colors.blue.shade100,
-                              child: Icon(_getCategoryIcon(listing.category), color: Colors.blue.shade700),
-                            ),
-                            title: Text(listing.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            leading: kCategoryBadge(listing.category),
+                            title: Text(listing.name, style: GoogleFonts.dmSans(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              color: kCream,
+                            )),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const SizedBox(height: 4),
-                                Text(listing.category),
-                                Text(listing.address, maxLines: 1, overflow: TextOverflow.ellipsis),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: kGreen.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    listing.category,
+                                    style: GoogleFonts.dmSans(fontSize: 11, color: kGreenLight),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  listing.address,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.dmSans(fontSize: 12, color: kMuted),
+                                ),
                               ],
                             ),
-                            trailing: Icon(Icons.chevron_right, color: Colors.blue.shade700),
+                            trailing: const Icon(Icons.chevron_right_rounded, color: kTerra),
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(builder: (_) => ListingDetailScreen(listing: listing)),
                             ),
                           ),
-                        );
+                        ).animate(delay: (index * 50).ms).fadeIn(duration: 350.ms).slideX(begin: 0.05);
                       },
                     );
                   },

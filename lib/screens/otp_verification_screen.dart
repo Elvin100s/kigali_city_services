@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/auth_provider.dart';
-import '../theme/app_theme.dart';
+import '../widgets/ui_helpers.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   const OtpVerificationScreen({super.key});
@@ -46,11 +48,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     final success = await authProvider.verifyOtp(user.email!, otpCode);
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Email verified successfully!'),
-          backgroundColor: AppTheme.successColor,
+        SnackBar(
+          content: Text('Email verified successfully!', style: GoogleFonts.dmSans()),
+          backgroundColor: kGreen,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: AppTheme.buttonRadius),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
     }
@@ -59,69 +61,55 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: kBg,
       body: Consumer<AuthProvider>(
         builder: (context, authProvider, child) {
           return SafeArea(
             child: Padding(
-              padding: const EdgeInsets.all(AppTheme.spacingLG),
+              padding: const EdgeInsets.all(32),
               child: Column(
                 children: [
                   const Spacer(),
-                  
-                  // Header Icon
                   Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      gradient: AppTheme.primaryGradient,
+                    width: 100,
+                    height: 100,
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(colors: [kGreen, kGreenLight]),
                       shape: BoxShape.circle,
-                      boxShadow: AppTheme.buttonShadow,
                     ),
-                    child: const Icon(
-                      Icons.security_rounded,
-                      size: 60,
-                      color: Colors.white,
-                    ),
-                  ),
-                  
-                  const SizedBox(height: AppTheme.spacingXL),
-                  
-                  // Title
-                  const Text(
+                    child: const Icon(Icons.security_rounded, size: 50, color: Colors.white),
+                  ).animate().scale(begin: const Offset(0.6, 0.6), duration: 600.ms),
+                  const SizedBox(height: 32),
+                  Text(
                     'Enter Verification Code',
-                    style: AppTheme.headingLarge,
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w700,
+                      color: kCream,
+                    ),
                     textAlign: TextAlign.center,
                   ),
-                  
-                  const SizedBox(height: AppTheme.spacingMD),
-                  
-                  // Subtitle
+                  const SizedBox(height: 16),
                   Text(
                     'We sent a 6-digit code to\n${authProvider.currentUser?.email}',
-                    style: AppTheme.bodyLarge.copyWith(color: AppTheme.textSecondary),
+                    style: GoogleFonts.dmSans(fontSize: 13, color: kMuted),
                     textAlign: TextAlign.center,
                   ),
-                  
-                  const SizedBox(height: AppTheme.spacingXXL),
-                  
-                  // OTP Input Fields
+                  const SizedBox(height: 40),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: List.generate(6, (index) {
+                      final hasValue = _controllers[index].text.isNotEmpty;
                       return Container(
                         width: 50,
                         height: 60,
                         decoration: BoxDecoration(
-                          color: AppTheme.surfaceColor,
-                          borderRadius: AppTheme.inputRadius,
+                          color: kSurface2,
+                          borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: _controllers[index].text.isNotEmpty 
-                                ? AppTheme.primaryColor 
-                                : AppTheme.borderColor,
-                            width: 2,
+                            color: hasValue ? kGreenLight : Colors.white12,
+                            width: hasValue ? 1.5 : 1.0,
                           ),
-                          boxShadow: AppTheme.cardShadow,
                         ),
                         child: TextField(
                           controller: _controllers[index],
@@ -129,8 +117,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                           textAlign: TextAlign.center,
                           keyboardType: TextInputType.number,
                           maxLength: 1,
-                          style: AppTheme.headingMedium.copyWith(
-                            color: AppTheme.primaryColor,
+                          style: GoogleFonts.dmSans(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: kGreenLight,
                           ),
                           decoration: const InputDecoration(
                             counterText: '',
@@ -143,73 +133,58 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                             setState(() {});
                           },
                         ),
-                      );
+                      ).animate(delay: (index * 70).ms).fadeIn(duration: 300.ms);
                     }),
                   ),
-                  
-                  const SizedBox(height: AppTheme.spacingXXL),
-                  
-                  // Error Message
+                  const SizedBox(height: 40),
                   if (authProvider.error != null)
                     Container(
-                      padding: const EdgeInsets.all(AppTheme.spacingMD),
-                      margin: const EdgeInsets.only(bottom: AppTheme.spacingLG),
+                      padding: const EdgeInsets.all(14),
+                      margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
-                        color: AppTheme.errorColor.withValues(alpha: 0.1),
-                        borderRadius: AppTheme.buttonRadius,
-                        border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.3)),
+                        color: Colors.red.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.error_outline, color: AppTheme.errorColor, size: 20),
-                          const SizedBox(width: AppTheme.spacingSM),
+                          const Icon(Icons.error_outline, color: Colors.red, size: 20),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               authProvider.error!,
-                              style: AppTheme.bodyMedium.copyWith(color: AppTheme.errorColor),
+                              style: GoogleFonts.dmSans(fontSize: 13, color: Colors.red),
                             ),
                           ),
                         ],
                       ),
                     ),
-                  
-                  // Verify Button
-                  AppTheme.gradientButton(
-                    text: 'Verify Code',
-                    onPressed: _verifyOtp,
-                    isLoading: authProvider.isLoading,
-                    width: double.infinity,
+                  kGradientButton(
+                    'Verify Code',
+                    _verifyOtp,
+                    icon: Icons.check_circle,
                   ),
-                  
-                  const SizedBox(height: AppTheme.spacingLG),
-                  
-                  // Resend Code
+                  const SizedBox(height: 16),
                   TextButton(
-                    onPressed: authProvider.isLoading 
-                        ? null 
+                    onPressed: authProvider.isLoading
+                        ? null
                         : () => authProvider.resendOtp(authProvider.currentUser!.email!),
                     child: Text(
                       'Resend Code',
-                      style: AppTheme.bodyLarge.copyWith(
-                        color: AppTheme.primaryColor,
+                      style: GoogleFonts.dmSans(
+                        color: kGold,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
-                  
-                  const SizedBox(height: AppTheme.spacingSM),
-                  
-                  // Logout
+                  const SizedBox(height: 8),
                   TextButton(
                     onPressed: () => authProvider.signOut(),
                     child: Text(
                       'Logout',
-                      style: AppTheme.bodyMedium.copyWith(
-                        color: AppTheme.textSecondary,
-                      ),
+                      style: GoogleFonts.dmSans(color: kMuted),
                     ),
                   ),
-                  
                   const Spacer(),
                 ],
               ),

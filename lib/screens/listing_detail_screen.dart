@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import '../models/listing_model.dart';
+import '../widgets/ui_helpers.dart';
 import 'edit_listing_screen.dart';
 
 class ListingDetailScreen extends StatelessWidget {
@@ -13,15 +17,21 @@ class ListingDetailScreen extends StatelessWidget {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(8),
+          width: 40,
+          height: 40,
           decoration: BoxDecoration(
-            color: color.withAlpha(25),
-            borderRadius: BorderRadius.circular(8),
+            color: color.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon, size: 20, color: color),
         ),
         const SizedBox(width: 12),
-        Expanded(child: Text(text, style: const TextStyle(fontSize: 16))),
+        Expanded(
+          child: Text(
+            text,
+            style: GoogleFonts.dmSans(fontSize: 14, color: kCream),
+          ),
+        ),
       ],
     );
   }
@@ -34,7 +44,7 @@ class ListingDetailScreen extends StatelessWidget {
         actions: canEdit
             ? [
                 IconButton(
-                  icon: const Icon(Icons.edit),
+                  icon: const Icon(Icons.edit, color: kGold),
                   onPressed: () => Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => EditListingScreen(listing: listing)),
@@ -45,20 +55,43 @@ class ListingDetailScreen extends StatelessWidget {
       ),
       body: ListView(
         children: [
-          Container(
-            height: 300,
-            color: Colors.grey.shade300,
+          SizedBox(
+            height: 250,
             child: Stack(
               children: [
-                Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
+                  child: FlutterMap(
+                    options: MapOptions(
+                      initialCenter: LatLng(listing.latitude, listing.longitude),
+                      initialZoom: 15.0,
+                    ),
                     children: [
-                      Icon(Icons.map, size: 80, color: Colors.grey.shade600),
-                      const SizedBox(height: 16),
-                      Text('Map View', style: TextStyle(fontSize: 20, color: Colors.grey.shade600)),
-                      const SizedBox(height: 8),
-                      Text('Lat: ${listing.latitude}, Lng: ${listing.longitude}', style: TextStyle(color: Colors.grey.shade600)),
+                      TileLayer(
+                        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        userAgentPackageName: 'com.example.kigali_city_services',
+                      ),
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: LatLng(listing.latitude, listing.longitude),
+                            width: 40,
+                            height: 40,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: kGreen,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 2),
+                              ),
+                              child: const Icon(
+                                Icons.location_on,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -68,50 +101,76 @@ class ListingDetailScreen extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.blue.shade700,
+                      color: kGreen.withValues(alpha: 0.9),
                       borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: kGreenLight),
                     ),
-                    child: Text(listing.category, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    child: Text(
+                      listing.category,
+                      style: GoogleFonts.dmSans(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(listing.name, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                Text(
+                  listing.name,
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    color: kCream,
+                  ),
+                ),
                 const SizedBox(height: 16),
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
+                    color: kSurface2,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(listing.description, style: const TextStyle(fontSize: 16)),
+                  child: Text(
+                    listing.description,
+                    style: GoogleFonts.dmSans(fontSize: 14, color: kCream, height: 1.5),
+                  ),
                 ),
                 const SizedBox(height: 20),
-                _buildInfoRow(Icons.location_on, listing.address, Colors.red),
+                _buildInfoRow(Icons.location_on, listing.address, kTerra),
                 const SizedBox(height: 12),
-                _buildInfoRow(Icons.phone, listing.phoneNumber, Colors.green),
+                _buildInfoRow(Icons.phone, listing.phoneNumber, kGreenLight),
                 const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton.icon(
-                    onPressed: () async {
-                      final url = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=${listing.latitude},${listing.longitude}');
-                      if (await canLaunchUrl(url)) await launchUrl(url);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue.shade700,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    icon: const Icon(Icons.directions),
-                    label: const Text('Get Directions', style: TextStyle(fontSize: 16)),
+                kGradientButton(
+                  'Get Directions',
+                  () async {
+                    final url = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=${listing.latitude},${listing.longitude}');
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(url, mode: LaunchMode.externalApplication);
+                    }
+                  },
+                  icon: Icons.directions,
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () async {
+                    final url = Uri.parse('tel:${listing.phoneNumber}');
+                    if (await canLaunchUrl(url)) await launchUrl(url);
+                  },
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: kTerra),
+                    minimumSize: const Size(double.infinity, 52),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
+                  icon: const Icon(Icons.phone, color: kTerra),
+                  label: Text('Call', style: GoogleFonts.dmSans(color: kTerra, fontWeight: FontWeight.w600)),
                 ),
               ],
             ),

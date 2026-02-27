@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../providers/auth_provider.dart';
+import '../widgets/ui_helpers.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -17,52 +19,116 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final user = context.read<AuthProvider>().currentUser;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        backgroundColor: Colors.blue.shade700,
-        elevation: 0,
-      ),
+      appBar: AppBar(title: const Text('Settings')),
       body: ListView(
+        padding: const EdgeInsets.all(16),
         children: [
           Container(
-            color: Colors.blue.shade700,
-            padding: const EdgeInsets.symmetric(vertical: 40),
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: kSurface,
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: Column(
               children: [
                 CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Colors.white,
-                  child: Text(user?.email?[0].toUpperCase() ?? 'U', style: TextStyle(fontSize: 40, color: Colors.blue.shade700)),
+                  radius: 40,
+                  backgroundColor: kGreen,
+                  child: Text(
+                    user?.email?[0].toUpperCase() ?? 'U',
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 16),
-                Text(user?.email ?? '', style: const TextStyle(fontSize: 18, color: Colors.white)),
+                Text(
+                  user?.email ?? '',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: kCream,
+                  ),
+                ),
               ],
             ),
           ),
           const SizedBox(height: 20),
           Card(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: SwitchListTile(
-              title: const Text('Enable Notifications'),
-              subtitle: const Text('Receive updates about new listings'),
+              title: Text('Enable Notifications', style: GoogleFonts.dmSans(color: kCream)),
+              subtitle: Text('Receive updates about new listings', style: GoogleFonts.dmSans(fontSize: 12, color: kMuted)),
               value: _notificationsEnabled,
-              activeThumbColor: Colors.blue.shade700,
               onChanged: (v) => setState(() => _notificationsEnabled = v),
             ),
           ),
           const SizedBox(height: 20),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: ElevatedButton.icon(
-              onPressed: () => context.read<AuthProvider>().signOut(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              icon: const Icon(Icons.logout),
-              label: const Text('Logout'),
-            ),
+          TextButton.icon(
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: kSurface,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                builder: (context) => Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.logout, color: kTerra, size: 48),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Logout',
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          color: kCream,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Are you sure you want to logout?',
+                        style: GoogleFonts.dmSans(fontSize: 13, color: kMuted),
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.pop(context),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(color: Colors.white12),
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                              ),
+                              child: Text('Cancel', style: GoogleFonts.dmSans(color: kCream)),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                context.read<AuthProvider>().signOut();
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: kTerra,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                              ),
+                              child: Text('Logout', style: GoogleFonts.dmSans(color: Colors.white)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+            icon: const Icon(Icons.logout, color: kTerra),
+            label: Text('Logout', style: GoogleFonts.dmSans(color: kTerra, fontWeight: FontWeight.w600)),
           ),
         ],
       ),

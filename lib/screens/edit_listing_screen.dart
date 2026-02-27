@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/listings_provider.dart';
 import '../models/listing_model.dart';
+import '../widgets/ui_helpers.dart';
 
 class EditListingScreen extends StatefulWidget {
   final ListingModel listing;
@@ -41,10 +44,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Listing'),
-        backgroundColor: Colors.blue.shade700,
-      ),
+      appBar: AppBar(title: const Text('Edit Place')),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -52,13 +52,15 @@ class _EditListingScreenState extends State<EditListingScreen> {
           children: [
             TextFormField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Name', border: OutlineInputBorder()),
+              decoration: const InputDecoration(labelText: 'Name'),
               validator: (v) => v!.isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               initialValue: _category,
-              decoration: const InputDecoration(labelText: 'Category', border: OutlineInputBorder()),
+              decoration: const InputDecoration(labelText: 'Category'),
+              dropdownColor: kSurface2,
+              style: GoogleFonts.dmSans(color: kCream),
               items: ['Restaurant', 'Hospital', 'School', 'Hotel', 'Shop', 'Bank', 'Other']
                   .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                   .toList(),
@@ -67,48 +69,41 @@ class _EditListingScreenState extends State<EditListingScreen> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _descController,
-              decoration: const InputDecoration(labelText: 'Description', border: OutlineInputBorder()),
+              decoration: const InputDecoration(labelText: 'Description'),
               maxLines: 3,
               validator: (v) => v!.isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _addressController,
-              decoration: const InputDecoration(labelText: 'Address', border: OutlineInputBorder()),
+              decoration: const InputDecoration(labelText: 'Address'),
               validator: (v) => v!.isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _phoneController,
-              decoration: const InputDecoration(labelText: 'Phone Number', border: OutlineInputBorder()),
+              decoration: const InputDecoration(labelText: 'Phone Number'),
               validator: (v) => v!.isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    await context.read<ListingsProvider>().updateListing(widget.listing.id!, {
-                      'name': _nameController.text,
-                      'category': _category,
-                      'description': _descController.text,
-                      'address': _addressController.text,
-                      'phoneNumber': _phoneController.text,
-                    });
-                    if (context.mounted) Navigator.pop(context);
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue.shade700,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: const Text('Update Listing', style: TextStyle(fontSize: 16)),
-              ),
+            kGradientButton(
+              'Update Listing',
+              () async {
+                if (_formKey.currentState!.validate()) {
+                  await context.read<ListingsProvider>().updateListing(widget.listing.id!, {
+                    'name': _nameController.text,
+                    'category': _category,
+                    'description': _descController.text,
+                    'address': _addressController.text,
+                    'phoneNumber': _phoneController.text,
+                  });
+                  if (context.mounted) Navigator.pop(context);
+                }
+              },
+              icon: Icons.save,
             ),
           ],
-        ),
+        ).animate().fadeIn(duration: 400.ms),
       ),
     );
   }

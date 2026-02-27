@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../providers/auth_provider.dart';
 import '../providers/listings_provider.dart';
 import '../models/listing_model.dart';
+import '../widgets/ui_helpers.dart';
 import 'add_listing_screen.dart';
 import 'listing_detail_screen.dart';
 
@@ -14,65 +16,119 @@ class MyListingsScreen extends StatelessWidget {
     final userId = context.read<AuthProvider>().currentUser?.uid ?? '';
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Listings'),
-        backgroundColor: Colors.blue.shade700,
-      ),
+      appBar: AppBar(title: const Text('My Listings')),
       body: StreamBuilder<List<ListingModel>>(
         stream: context.read<ListingsProvider>().getUserListingsStream(userId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return ListView(
+              padding: const EdgeInsets.all(16),
+              children: List.generate(4, (_) => kShimmerCard()),
+            );
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, color: kTerra, size: 56),
+                  const SizedBox(height: 16),
+                  Text('Error: ${snapshot.error}', style: GoogleFonts.dmSans(color: kMuted)),
+                ],
+              ),
+            );
           }
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No listings yet. Add your first!'));
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.add_location_alt, color: kMuted, size: 56),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No listings yet',
+                      style: GoogleFonts.dmSans(fontSize: 15, color: kMuted),
+                    ),
+                    const SizedBox(height: 24),
+                    kGradientButton(
+                      'Add Your First Place',
+                      () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddListingScreen())),
+                      icon: Icons.add,
+                    ),
+                  ],
+                ),
+              ),
+            );
           }
           return ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: snapshot.data!.length,
             itemBuilder: (context, index) {
               final listing = snapshot.data![index];
-              return Card(
-                elevation: 2,
-                margin: const EdgeInsets.only(bottom: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(16),
-                  leading: CircleAvatar(
-                    backgroundColor: Colors.green.shade100,
-                    child: const Icon(Icons.check_circle, color: Colors.green),
+              return Dismissible(
+                key: Key(listing.id!),
+                direction: DismissDirection.endToStart,
+                background: Container(
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade900,
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  title: Text(listing.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text('${listing.category} • ${listing.address}'),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () async {
-                      final confirm = await showDialog<bool>(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          title: const Text('Delete Listing'),
-                          content: const Text('Are you sure?'),
-                          actions: [
-                            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, true),
-                              child: const Text('Delete', style: TextStyle(color: Colors.red)),
-                            ),
-                          ],
+                  child: const Icon(Icons.delete, color: Colors.white),
+                ),
+                confirmDismiss: (_) async {
+                  return await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      backgroundColor: kSurface,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      title: Text('Delete Listing', style: GoogleFonts.playfairDisplay(color: kCream)),
+                      content: Text('Are you sure?', style: GoogleFonts.dmSans(color: kMuted)),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: Text('Cancel', style: GoogleFonts.dmSans(color: kCream)),
                         ),
-                      );
-                      if (confirm == true && context.mounted) {
-                        await context.read<ListingsProvider>().deleteListing(listing.id!);
-                      }
-                    },
-                  ),
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => ListingDetailScreen(listing: listing, canEdit: true)),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: Text('Delete', style: GoogleFonts.dmSans(color: Colors.red)),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                onDismissed: (_) async {
+                  await context.read<ListingsProvider>().deleteListing(listing.id!);
+                },
+                child: Card(
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    leading: kCategoryBadge(listing.category),
+                    title: Text(listing.name, style: GoogleFonts.dmSans(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: kCream,
+                    )),
+                    subtitle: Text(
+                      '${listing.category} • ${listing.address}',
+                      style: GoogleFonts.dmSans(fontSize: 12, color: kMuted),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.edit, color: kGold),
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => ListingDetailScreen(listing: listing, canEdit: true)),
+                      ),
+                    ),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => ListingDetailScreen(listing: listing, canEdit: true)),
+                    ),
                   ),
                 ),
               );
@@ -84,7 +140,6 @@ class MyListingsScreen extends StatelessWidget {
         onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddListingScreen())),
         icon: const Icon(Icons.add),
         label: const Text('Add Listing'),
-        backgroundColor: Colors.blue.shade700,
       ),
     );
   }

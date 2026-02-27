@@ -1,5 +1,8 @@
 import 'dart:math';
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class EmailOtpService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -31,6 +34,25 @@ class EmailOtpService {
       ''',
       'createdAt': FieldValue.serverTimestamp(),
     });
+
+    // Send real email via EmailJS
+    try {
+      await http.post(
+        Uri.parse('https://api.emailjs.com/api/v1.0/email/send'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'service_id': dotenv.env['EMAILJS_SERVICE_ID'],
+          'template_id': dotenv.env['EMAILJS_TEMPLATE_ID'],
+          'user_id': dotenv.env['EMAILJS_PUBLIC_KEY'],
+          'template_params': {
+            'otp_code': otp,
+            'email': email,
+          },
+        }),
+      );
+    } catch (e) {
+      // Silently fail if email sending fails, OTP is still stored in Firestore
+    }
   }
 
   Future<bool> verifyOtp(String email, String enteredOtp) async {
