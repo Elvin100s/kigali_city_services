@@ -17,6 +17,47 @@ class _SignupScreenState extends State<SignupScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController();
+  String _passwordStrength = '';
+  Color _strengthColor = Colors.grey;
+
+  @override
+  void initState() {
+    super.initState();
+    _passwordController.addListener(_checkPasswordStrength);
+  }
+
+  void _checkPasswordStrength() {
+    final password = _passwordController.text;
+    if (password.isEmpty) {
+      setState(() {
+        _passwordStrength = '';
+        _strengthColor = Colors.grey;
+      });
+      return;
+    }
+
+    int strength = 0;
+    if (password.length >= 8) strength++;
+    if (password.contains(RegExp(r'[A-Z]'))) strength++;
+    if (password.contains(RegExp(r'[0-9]'))) strength++;
+    if (password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) strength++;
+
+    setState(() {
+      if (strength <= 1) {
+        _passwordStrength = 'Weak';
+        _strengthColor = Colors.red;
+      } else if (strength == 2) {
+        _passwordStrength = 'Medium';
+        _strengthColor = Colors.orange;
+      } else if (strength == 3) {
+        _passwordStrength = 'Strong';
+        _strengthColor = kGreenLight;
+      } else {
+        _passwordStrength = 'Very Strong';
+        _strengthColor = kGreen;
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -90,6 +131,26 @@ class _SignupScreenState extends State<SignupScreen> {
                     obscureText: true,
                     validator: (v) => v!.length < 6 ? 'Min 6 characters' : null,
                   ),
+                  if (_passwordStrength.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Row(
+                        children: [
+                          Text(
+                            'Strength: ',
+                            style: GoogleFonts.dmSans(fontSize: 12, color: kMuted),
+                          ),
+                          Text(
+                            _passwordStrength,
+                            style: GoogleFonts.dmSans(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: _strengthColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   const SizedBox(height: 24),
                   Consumer<AuthProvider>(
                     builder: (context, auth, _) {

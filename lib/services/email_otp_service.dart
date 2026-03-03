@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -37,7 +38,7 @@ class EmailOtpService {
 
     // Send real email via EmailJS
     try {
-      await http.post(
+      final response = await http.post(
         Uri.parse('https://api.emailjs.com/api/v1.0/email/send'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
@@ -45,13 +46,14 @@ class EmailOtpService {
           'template_id': dotenv.env['EMAILJS_TEMPLATE_ID'],
           'user_id': dotenv.env['EMAILJS_PUBLIC_KEY'],
           'template_params': {
+            'user_email': email,
             'otp_code': otp,
-            'email': email,
           },
         }),
       );
+      developer.log('EmailJS Response: ${response.statusCode} - ${response.body}');
     } catch (e) {
-      // Silently fail if email sending fails, OTP is still stored in Firestore
+      developer.log('EmailJS Error: $e');
     }
   }
 
