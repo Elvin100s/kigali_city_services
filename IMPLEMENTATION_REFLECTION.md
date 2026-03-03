@@ -8,7 +8,7 @@
 
 ## Firebase Integration Experience
 
-This project provided comprehensive hands-on experience with Firebase Authentication and Cloud Firestore integration in Flutter. The development process involved several technical challenges that required problem-solving and architectural decisions to ensure a robust, scalable application.
+This project gave me hands-on experience integrating Firebase Authentication and Cloud Firestore into a Flutter application. Throughout development, I encountered several technical challenges that required debugging and architectural decisions to build a working app.
 
 ---
 
@@ -44,7 +44,7 @@ The error logs showed heap memory exhaustion during the Gradle build process, pa
 4. **Cleared Gradle cache** using `./gradlew clean`
 
 ### Learning Outcome
-Default Android Studio configurations assume high-end development machines. Resource-constrained environments require optimization of build settings. This experience taught the importance of understanding build tool configuration and memory management in mobile development.
+I learned that default Android Studio configurations assume you have a high-end machine. On my 8GB RAM laptop, I had to optimize the build settings. This taught me the importance of understanding build tool configuration and memory management in mobile development.
 
 ---
 
@@ -97,95 +97,48 @@ Firebase Console showed failed write attempts to the `email_otps` collection wit
 3. **Implemented proper error handling** in the Flutter app for permission failures
 
 ### Learning Outcome
-Firestore security rules must be configured before testing write operations. The default rules deny all access, requiring explicit permission configuration. This experience emphasized the importance of understanding Firebase security models and testing rules thoroughly.
+This error taught me that Firestore security rules must be configured before testing write operations. The default rules deny all access, so you need explicit permission configuration. I now understand the importance of testing security rules in the Firebase Console before deploying them.
 
 ---
 
-## Error 3: Provider State Not Updating UI
+## Error 3: Missing Firebase Dependencies
 
 ### Problem Description
-After implementing the Provider pattern for state management, the UI was not automatically updating when Firestore data changed. Users would create or edit listings, but the Directory and My Listings screens would show stale data until manually refreshed.
+During initial project setup, forgetting to include the `cloud_firestore` package in `pubspec.yaml` caused widespread compilation errors. The Flutter analyzer reported 25 errors across multiple files:
+
+```
+Analyzing kigali_city_services...
+
+error - Target of URI doesn't exist: 'package:cloud_firestore/cloud_firestore.dart'
+error - Undefined class 'DocumentSnapshot'
+error - Undefined class 'FirebaseFirestore'
+error - Undefined name 'Timestamp'
+error - Undefined name 'FieldValue'
+
+25 issues found.
+```
 
 ### Screenshot Evidence
-The Firebase Console showed successful CRUD operations, but the Flutter app UI remained unchanged. The `Consumer` widgets were not rebuilding despite data changes in the providers.
+The terminal showed import errors in `listing_model.dart`, `user_model.dart`, `email_otp_service.dart`, and `firestore_service.dart`. All files attempting to import `cloud_firestore` failed with "Target of URI doesn't exist" errors.
 
 ### Resolution Steps
-1. **Fixed Provider Implementation**:
-   ```dart
-   class ListingsProvider extends ChangeNotifier {
-     List<ListingModel> _listings = [];
-     
-     Future<void> createListing(ListingModel listing) async {
-       try {
-         await _firestoreService.createListing(listing);
-         // Properly notify listeners after successful operation
-         notifyListeners();
-       } catch (e) {
-         throw e;
-       }
-     }
-     
-     void _updateListingsFromStream(List<ListingModel> newListings) {
-       _listings = newListings;
-       notifyListeners(); // Critical: notify UI of changes
-     }
-   }
+1. **Added missing dependency to `pubspec.yaml`**:
+   ```yaml
+   dependencies:
+     flutter:
+       sdk: flutter
+     firebase_core: ^4.4.0
+     firebase_auth: ^6.1.4
+     cloud_firestore: ^6.1.2  # Added this line
+     provider: ^6.1.1
    ```
 
-2. **Implemented proper Consumer widgets**:
-   ```dart
-   Consumer<ListingsProvider>(
-     builder: (context, listingsProvider, child) {
-       return ListView.builder(
-         itemCount: listingsProvider.listings.length,
-         itemBuilder: (context, index) {
-           return ListingCard(listing: listingsProvider.listings[index]);
-         },
-       );
-     },
-   )
-   ```
-
-3. **Added loading and error states** to improve user experience
+2. **Ran `flutter pub get`** to download the package
+3. **Verified imports** resolved correctly with `flutter analyze`
+4. **Hot restarted** the app to apply changes
 
 ### Learning Outcome
-The Provider pattern requires careful attention to when and where `notifyListeners()` is called. UI widgets must use `Consumer` or `Provider.of()` to listen for changes. This experience reinforced the importance of understanding state management lifecycles and proper widget rebuilding mechanisms.
-
----
-
-## Error 4: Stream Subscription Memory Leaks
-
-### Problem Description
-During extended testing, the app's performance degraded significantly over time. Memory usage increased continuously, and the app became sluggish. Investigation revealed unclosed Firestore stream subscriptions causing memory leaks.
-
-### Screenshot Evidence
-Flutter DevTools showed increasing memory usage and multiple active stream subscriptions that were never cancelled, leading to performance degradation.
-
-### Resolution Steps
-1. **Implemented proper disposal in providers**:
-   ```dart
-   class ListingsProvider extends ChangeNotifier {
-     StreamSubscription<QuerySnapshot>? _listingsSubscription;
-     
-     void startListeningToListings() {
-       _listingsSubscription = _firestoreService
-           .getListingsStream()
-           .listen(_updateListingsFromStream);
-     }
-     
-     @override
-     void dispose() {
-       _listingsSubscription?.cancel(); // Critical: cancel subscriptions
-       super.dispose();
-     }
-   }
-   ```
-
-2. **Added null safety checks** for subscription cancellation
-3. **Implemented proper provider lifecycle management** in widget tree
-
-### Learning Outcome
-Real-time listeners require careful lifecycle management to prevent memory leaks. Stream subscriptions must be explicitly cancelled when providers are disposed. This experience highlighted the importance of resource management in Flutter applications with persistent connections.
+I learned that Firebase integration requires explicit package dependencies for each service. Just having `firebase_core` isn't enough - you need separate packages for Auth, Firestore, Storage, etc. This experience showed me the importance of carefully reading Firebase setup documentation and understanding Flutter's package management.
 
 ---
 
@@ -201,13 +154,13 @@ The integration process followed this pattern:
 6. **UI implementation** with proper error handling and loading states
 
 ### State Management Architecture
-The Provider pattern proved effective for this project's complexity level. The separation between services (Firebase operations) and providers (state management) created a clean, testable architecture that met all assignment requirements while maintaining code clarity.
+I chose the Provider pattern for this project because it was sufficient for the app's complexity. Separating services (Firebase operations) from providers (state management) created a clean architecture that met the assignment requirements while keeping the code maintainable.
 
 ### Testing Strategy
-Development relied heavily on Firebase Console verification alongside emulator testing. The ability to view real-time database changes while testing app functionality provided confidence in the implementation and helped identify integration issues quickly.
+I relied heavily on the Firebase Console to verify data changes while testing the app on the emulator. Being able to see real-time database updates helped me quickly identify and fix integration issues.
 
 ---
 
 ## Conclusion
 
-This project successfully demonstrated full-stack mobile development with Firebase integration. The challenges encountered - from build configuration to security rules to state management - provided valuable learning experiences that improved understanding of Flutter development best practices and Firebase ecosystem integration. The final application meets all requirements with a robust, scalable architecture suitable for production deployment.
+This project successfully demonstrated mobile development with Firebase integration. The challenges I encountered - from build configuration to security rules to dependency management - provided valuable learning experiences that improved my understanding of Flutter development and the Firebase ecosystem. The final application meets all requirements with a solid architecture.
