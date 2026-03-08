@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/ui_helpers.dart';
+import 'home_screen.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   const OtpVerificationScreen({super.key});
@@ -47,13 +48,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     
     final success = await authProvider.verifyOtp(user.email!, otpCode);
     if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Email verified successfully!', style: GoogleFonts.dmSans()),
-          backgroundColor: kGreen,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        (_) => false,
       );
     }
   }
@@ -65,11 +63,19 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       body: Consumer<AuthProvider>(
         builder: (context, authProvider, child) {
           return SafeArea(
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(32),
-              child: Column(
-                children: [
-                  const Spacer(),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: MediaQuery.of(context).size.height -
+                      MediaQuery.of(context).padding.top -
+                      MediaQuery.of(context).padding.bottom -
+                      64,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                  const SizedBox(height: 32),
                   Container(
                     width: 100,
                     height: 100,
@@ -186,10 +192,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       style: GoogleFonts.dmSans(color: kMuted),
                     ),
                   ),
-                  const Spacer(),
+                  const SizedBox(height: 32),
                 ],
               ),
             ),
+          ),
           );
         },
       ),

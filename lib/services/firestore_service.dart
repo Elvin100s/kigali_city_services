@@ -18,10 +18,12 @@ class FirestoreService {
     return _firestore
         .collection('listings')
         .where('createdBy', isEqualTo: userId)
-        .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => ListingModel.fromFirestore(doc)).toList());
+        .map((snapshot) {
+          final listings = snapshot.docs.map((doc) => ListingModel.fromFirestore(doc)).toList();
+          listings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return listings;
+        });
   }
 
   Future<String> createListing(ListingModel listing) async {

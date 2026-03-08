@@ -2,13 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import '../providers/auth_provider.dart';
 import '../providers/listings_provider.dart';
 import '../models/listing_model.dart';
 import '../widgets/ui_helpers.dart';
 
 class AddListingScreen extends StatefulWidget {
-  const AddListingScreen({super.key});
+  final double? initialLat;
+  final double? initialLng;
+
+  const AddListingScreen({super.key, this.initialLat, this.initialLng});
 
   @override
   State<AddListingScreen> createState() => _AddListingScreenState();
@@ -20,12 +25,40 @@ class _AddListingScreenState extends State<AddListingScreen> {
   final _descController = TextEditingController();
   final _addressController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _latController = TextEditingController(text: '-1.9441');
-  final _lngController = TextEditingController(text: '30.0619');
-  String _category = 'Restaurant';
+  late final TextEditingController _latController;
+  late final TextEditingController _lngController;
+  final _mapController = MapController();
+  String _category = 'Hospital';
+  late double _previewLat;
+  late double _previewLng;
+
+  @override
+  void initState() {
+    super.initState();
+    _previewLat = widget.initialLat ?? -1.9441;
+    _previewLng = widget.initialLng ?? 30.0619;
+    _latController = TextEditingController(text: _previewLat.toStringAsFixed(6));
+    _lngController = TextEditingController(text: _previewLng.toStringAsFixed(6));
+    _latController.addListener(_updateMapPreview);
+    _lngController.addListener(_updateMapPreview);
+  }
+
+  void _updateMapPreview() {
+    final lat = double.tryParse(_latController.text);
+    final lng = double.tryParse(_lngController.text);
+    if (lat != null && lng != null) {
+      setState(() {
+        _previewLat = lat;
+        _previewLng = lng;
+      });
+      _mapController.move(LatLng(lat, lng), 15.0);
+    }
+  }
 
   @override
   void dispose() {
+    _latController.removeListener(_updateMapPreview);
+    _lngController.removeListener(_updateMapPreview);
     _nameController.dispose();
     _descController.dispose();
     _addressController.dispose();
@@ -46,52 +79,140 @@ class _AddListingScreenState extends State<AddListingScreen> {
           children: [
             TextFormField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Name'),
+              decoration: const InputDecoration(
+                labelText: 'Name',
+                prefixIcon: Icon(Icons.storefront_rounded),
+              ),
               validator: (v) => v!.isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               initialValue: _category,
-              decoration: const InputDecoration(labelText: 'Category'),
+              decoration: const InputDecoration(
+                labelText: 'Category',
+                prefixIcon: Icon(Icons.category_rounded),
+              ),
               dropdownColor: kSurface2,
               style: GoogleFonts.dmSans(color: kCream),
-              items: ['Restaurant', 'Hospital', 'School', 'Hotel', 'Shop', 'Bank', 'Other']
-                  .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+              items: [
+                'Hospital',
+                'Police Station',
+                'Library',
+                'Restaurant',
+                'Café',
+                'Park',
+                'Tourist Attraction',
+              ]
+                  .map((c) => DropdownMenuItem(
+                        value: c,
+                        child: Row(
+                          children: [
+                            Icon(kCategoryIcon(c),
+                                size: 16, color: kCategoryColor(c)),
+                            const SizedBox(width: 8),
+                            Text(c),
+                          ],
+                        ),
+                      ))
                   .toList(),
               onChanged: (v) => setState(() => _category = v!),
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _descController,
-              decoration: const InputDecoration(labelText: 'Description'),
+              decoration: const InputDecoration(
+                labelText: 'Description',
+                prefixIcon: Icon(Icons.description_rounded),
+              ),
               maxLines: 3,
               validator: (v) => v!.isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _addressController,
-              decoration: const InputDecoration(labelText: 'Address'),
+              decoration: const InputDecoration(
+                labelText: 'Address',
+                prefixIcon: Icon(Icons.location_on_rounded),
+              ),
               validator: (v) => v!.isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _phoneController,
-              decoration: const InputDecoration(labelText: 'Phone Number'),
+              decoration: const InputDecoration(
+                labelText: 'Phone Number',
+                prefixIcon: Icon(Icons.phone_rounded),
+              ),
+              keyboardType: TextInputType.phone,
               validator: (v) => v!.isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: 16),
-            TextFormField(
-              controller: _latController,
-              decoration: const InputDecoration(labelText: 'Latitude'),
-              keyboardType: TextInputType.number,
-              validator: (v) => v!.isEmpty ? 'Required' : null,
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _latController,
+                    decoration: const InputDecoration(
+                      labelText: 'Latitude',
+                      prefixIcon: Icon(Icons.my_location_rounded),
+                    ),
+                    keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true, signed: true),
+                    validator: (v) => v!.isEmpty ? 'Required' : null,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextFormField(
+                    controller: _lngController,
+                    decoration: const InputDecoration(
+                      labelText: 'Longitude',
+                      prefixIcon: Icon(Icons.explore_rounded),
+                    ),
+                    keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true, signed: true),
+                    validator: (v) => v!.isEmpty ? 'Required' : null,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
-            TextFormField(
-              controller: _lngController,
-              decoration: const InputDecoration(labelText: 'Longitude'),
-              keyboardType: TextInputType.number,
-              validator: (v) => v!.isEmpty ? 'Required' : null,
+            Text('Location Preview',
+                style: GoogleFonts.dmSans(fontSize: 12, color: kMuted)),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: SizedBox(
+                height: 180,
+                child: FlutterMap(
+                  mapController: _mapController,
+                  options: MapOptions(
+                    initialCenter: LatLng(_previewLat, _previewLng),
+                    initialZoom: 15,
+                    interactionOptions:
+                        const InteractionOptions(flags: InteractiveFlag.none),
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      userAgentPackageName:
+                          'com.example.kigali_city_services',
+                    ),
+                    MarkerLayer(
+                      markers: [
+                        Marker(
+                          point: LatLng(_previewLat, _previewLng),
+                          width: 40,
+                          height: 40,
+                          child: const Icon(Icons.location_on,
+                              color: kTerra, size: 40),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 24),
             kGradientButton(
@@ -103,7 +224,8 @@ class _AddListingScreenState extends State<AddListingScreen> {
                   if (lat == null || lng == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Invalid coordinates', style: GoogleFonts.dmSans()),
+                        content: Text('Invalid coordinates',
+                            style: GoogleFonts.dmSans()),
                         backgroundColor: kTerra,
                       ),
                     );

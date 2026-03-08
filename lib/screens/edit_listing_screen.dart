@@ -61,8 +61,17 @@ class _EditListingScreenState extends State<EditListingScreen> {
               decoration: const InputDecoration(labelText: 'Category'),
               dropdownColor: kSurface2,
               style: GoogleFonts.dmSans(color: kCream),
-              items: ['Restaurant', 'Hospital', 'School', 'Hotel', 'Shop', 'Bank', 'Other']
-                  .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+              items: ['Hospital', 'Police Station', 'Library', 'Restaurant', 'Café', 'Park', 'Tourist Attraction']
+                  .map((c) => DropdownMenuItem(
+                        value: c,
+                        child: Row(
+                          children: [
+                            Icon(kCategoryIcon(c), size: 16, color: kCategoryColor(c)),
+                            const SizedBox(width: 8),
+                            Text(c),
+                          ],
+                        ),
+                      ))
                   .toList(),
               onChanged: (v) => setState(() => _category = v!),
             ),

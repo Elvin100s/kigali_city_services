@@ -2,6 +2,89 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 
+// Animated ambient background for auth screens
+class KAmbientBackground extends StatefulWidget {
+  const KAmbientBackground({super.key});
+
+  @override
+  State<KAmbientBackground> createState() => _KAmbientBackgroundState();
+}
+
+class _KAmbientBackgroundState extends State<KAmbientBackground>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 5),
+      vsync: this,
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (_, __) => CustomPaint(
+        painter: _GlowPainter(_controller.value),
+        child: const SizedBox.expand(),
+      ),
+    );
+  }
+}
+
+class _GlowPainter extends CustomPainter {
+  final double t;
+  const _GlowPainter(this.t);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+
+    // Base background
+    canvas.drawRect(rect, Paint()..color = const Color(0xFF0D1117));
+
+    // Green glow — top-left, breathes slowly
+    canvas.drawRect(
+      rect,
+      Paint()
+        ..shader = RadialGradient(
+          center: const Alignment(-0.3, -0.65),
+          radius: 1.4 + t * 0.25,
+          colors: [
+            const Color(0xFF2D6A4F).withValues(alpha: 0.3 + t * 0.1),
+            Colors.transparent,
+          ],
+        ).createShader(rect),
+    );
+
+    // Terra cotta glow — bottom-right, inverse pulse
+    canvas.drawRect(
+      rect,
+      Paint()
+        ..shader = RadialGradient(
+          center: const Alignment(0.8, 0.75),
+          radius: 0.9 + (1 - t) * 0.2,
+          colors: [
+            const Color(0xFFC1440E).withValues(alpha: 0.13 + (1 - t) * 0.05),
+            Colors.transparent,
+          ],
+        ).createShader(rect),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_GlowPainter old) => old.t != t;
+}
+
 // Theme colors
 const kBg = Color(0xFF0D1117);
 const kSurface = Color(0xFF161B22);
@@ -12,6 +95,34 @@ const kTerra = Color(0xFFC1440E);
 const kGold = Color(0xFFD4A853);
 const kCream = Color(0xFFE8E0D4);
 const kMuted = Color(0xFF8B8680);
+
+// Category color lookup
+Color kCategoryColor(String category) {
+  const colors = {
+    'Hospital': Color(0xFFE05A28),
+    'Police Station': Color(0xFF3A86FF),
+    'Library': Color(0xFFD4A853),
+    'Restaurant': Color(0xFFFF6B6B),
+    'Café': Color(0xFFA0522D),
+    'Park': Color(0xFF52B788),
+    'Tourist Attraction': Color(0xFFBB86FC),
+  };
+  return colors[category] ?? const Color(0xFF8B8680);
+}
+
+// Category icon lookup
+IconData kCategoryIcon(String category) {
+  const icons = {
+    'Hospital': Icons.local_hospital_rounded,
+    'Police Station': Icons.local_police_rounded,
+    'Library': Icons.menu_book_rounded,
+    'Restaurant': Icons.restaurant_rounded,
+    'Café': Icons.coffee_rounded,
+    'Park': Icons.park_rounded,
+    'Tourist Attraction': Icons.photo_camera_rounded,
+  };
+  return icons[category] ?? Icons.place_rounded;
+}
 
 // Gradient button
 Widget kGradientButton(String label, VoidCallback? onPressed, {IconData? icon}) {
@@ -57,22 +168,8 @@ Widget kGradientButton(String label, VoidCallback? onPressed, {IconData? icon}) 
 
 // Category icon badge
 Widget kCategoryBadge(String category) {
-  final data = {
-    'Hospital': [Icons.local_hospital_rounded, const Color(0xFFE05A28)],
-    'Police': [Icons.local_police_rounded, const Color(0xFF3A86FF)],
-    'Library': [Icons.menu_book_rounded, const Color(0xFFD4A853)],
-    'Restaurant': [Icons.restaurant_rounded, const Color(0xFFFF6B6B)],
-    'Café': [Icons.coffee_rounded, const Color(0xFFA0522D)],
-    'Park': [Icons.park_rounded, const Color(0xFF52B788)],
-    'Attraction': [Icons.photo_camera_rounded, const Color(0xFFBB86FC)],
-    'Bank': [Icons.account_balance_rounded, const Color(0xFF2D6A4F)],
-    'Hotel': [Icons.hotel_rounded, const Color(0xFF4ECDC4)],
-    'School': [Icons.school_rounded, const Color(0xFF9B59B6)],
-    'Shop': [Icons.shopping_bag_rounded, const Color(0xFFE74C3C)],
-    'Other': [Icons.place_rounded, const Color(0xFF8B8680)],
-  };
-  final d = data[category] ?? data['Other']!;
-  final color = d[1] as Color;
+  final color = kCategoryColor(category);
+  final icon = kCategoryIcon(category);
   return Container(
     width: 46,
     height: 46,
@@ -81,7 +178,7 @@ Widget kCategoryBadge(String category) {
       borderRadius: BorderRadius.circular(12),
       border: Border.all(color: color.withValues(alpha: 0.3)),
     ),
-    child: Icon(d[0] as IconData, color: color, size: 20),
+    child: Icon(icon, color: color, size: 20),
   );
 }
 
@@ -90,7 +187,7 @@ Widget kShimmerCard() => Shimmer.fromColors(
       baseColor: kSurface,
       highlightColor: kSurface2,
       child: Container(
-        height: 76,
+        height: 90,
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           color: kSurface,

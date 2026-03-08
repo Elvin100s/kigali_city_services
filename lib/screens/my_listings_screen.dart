@@ -62,11 +62,21 @@ class MyListingsScreen extends StatelessWidget {
               ),
             );
           }
+          final listings = snapshot.data!;
           return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: snapshot.data!.length,
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+            itemCount: listings.length + 1,
             itemBuilder: (context, index) {
-              final listing = snapshot.data![index];
+              if (index == 0) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10, top: 4),
+                  child: Text(
+                    '${listings.length} ${listings.length == 1 ? 'listing' : 'listings'}',
+                    style: GoogleFonts.dmSans(fontSize: 12, color: kMuted),
+                  ),
+                );
+              }
+              final listing = listings[index - 1];
               return Dismissible(
                 key: Key(listing.id!),
                 direction: DismissDirection.endToStart,

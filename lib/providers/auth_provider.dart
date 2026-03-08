@@ -105,12 +105,16 @@ class AuthProvider extends ChangeNotifier {
 
   Future<bool> isUserVerified() async {
     if (currentUser == null) return false;
-    
     try {
       final doc = await _firestoreService.getUserProfile(currentUser!.uid);
       return doc?['emailVerified'] ?? false;
     } catch (e) {
       return false;
     }
+  }
+
+  Future<Map<String, dynamic>?> getUserProfile() async {
+    if (currentUser == null) return null;
+    return await _firestoreService.getUserProfile(currentUser!.uid);
   }
 }

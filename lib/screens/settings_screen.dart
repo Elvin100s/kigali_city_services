@@ -23,37 +23,57 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: kSurface,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              children: [
-                CircleAvatar(
-                  radius: 40,
-                  backgroundColor: kGreen,
-                  child: Text(
-                    user?.email?[0].toUpperCase() ?? 'U',
-                    style: GoogleFonts.playfairDisplay(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
+          FutureBuilder<Map<String, dynamic>?>(
+            future: context.read<AuthProvider>().getUserProfile(),
+            builder: (context, profileSnapshot) {
+              final displayName =
+                  profileSnapshot.data?['displayName'] as String? ?? '';
+              final initial = displayName.isNotEmpty
+                  ? displayName[0].toUpperCase()
+                  : (user?.email?[0].toUpperCase() ?? 'U');
+              return Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: kSurface,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  children: [
+                    CircleAvatar(
+                      radius: 40,
+                      backgroundColor: kGreen,
+                      child: Text(
+                        initial,
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                    if (displayName.isNotEmpty) ...[
+                      Text(
+                        displayName,
+                        style: GoogleFonts.dmSans(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                          color: kCream,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                    ],
+                    Text(
+                      user?.email ?? '',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 13,
+                        color: kMuted,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  user?.email ?? '',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: kCream,
-                  ),
-                ),
-              ],
-            ),
+              );
+            },
           ),
           const SizedBox(height: 20),
           Card(

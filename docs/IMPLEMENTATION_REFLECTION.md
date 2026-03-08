@@ -168,6 +168,39 @@ Throughout development, I used Firebase Console to verify:
 3. **Dependencies:** Ensured all Firebase packages were compatible versions
 4. **Hot Reload:** Used hot restart when changing Firebase configuration
 
+### Challenge 6: EmailJS API Blocked in Non-Browser Environments
+
+**Problem:** After implementing OTP email verification using EmailJS, the feature worked on web but failed completely on the Android device with the following error:
+
+```
+Exception: Failed to send OTP email: API access from a non-browser environment is currently disabled
+```
+
+**Cause:** EmailJS blocks API requests from non-browser environments by default as a security measure. Flutter mobile apps do not run in a browser so all requests were rejected.
+
+**Solution:** In the EmailJS account security settings, the **"Allow EmailJS API for non-browser applications"** option was enabled. After saving the setting and re-running the app on the Android device, OTP emails were delivered successfully.
+
+---
+
+### Challenge 7: Firestore Composite Index Required
+
+**Problem:** When navigating to the My Listings screen, the following error appeared:
+
+```
+Error: [cloud_firestore/failed-precondition]
+The query requires an index. You can create it here: https://console.firebase.google.com/...
+```
+
+**Cause:** The `getUserListingsStream` query combined a `where` clause filtering by `createdBy` and an `orderBy` clause sorting by `createdAt`. Firestore requires a composite index for any query that filters and orders on different fields simultaneously.
+
+**Solution:** The `orderBy` clause was removed from the Firestore query entirely. Sorting is now performed client-side in Dart after the documents are retrieved, eliminating the composite index requirement while producing identical results:
+
+```dart
+listings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+```
+
+---
+
 ## Lessons Learned
 
 1. **Start with Firebase Setup:** Configure Firebase first before writing code

@@ -45,11 +45,11 @@ Bottom navigation bar with 4 main screens:
 ## 🎨 Design
 
 ### Modern UI Theme
-- **Futuristic purple gradient** design (#6C63FF primary color)
-- Clean, minimalist interface with glassmorphism effects
-- Consistent spacing and typography system
-- Smooth animations and transitions
-- Material 3 design principles
+- **Dark forest green** theme with terra cotta accents (primary: #2D6A4F, highlight: #52B788)
+- Dark background (#0D1117) with layered surface cards for depth
+- Playfair Display for headings, DM Sans for body text
+- Shimmer loading placeholders and slide/fade animations via flutter_animate
+- Category-coded color system with unique icons per service type
 
 ## 🏗️ Architecture
 

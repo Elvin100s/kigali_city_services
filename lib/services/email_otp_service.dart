@@ -19,7 +19,7 @@ class EmailOtpService {
     await _firestore.collection('email_otps').doc(email).set({
       'otp': otp,
       'createdAt': FieldValue.serverTimestamp(),
-      'expiresAt': DateTime.now().add(const Duration(minutes: 10)),
+      'expiresAt': Timestamp.fromDate(DateTime.now().add(const Duration(minutes: 10))),
       'verified': false,
     });
 
@@ -37,23 +37,22 @@ class EmailOtpService {
     });
 
     // Send real email via EmailJS
-    try {
-      final response = await http.post(
-        Uri.parse('https://api.emailjs.com/api/v1.0/email/send'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'service_id': dotenv.env['EMAILJS_SERVICE_ID'],
-          'template_id': dotenv.env['EMAILJS_TEMPLATE_ID'],
-          'user_id': dotenv.env['EMAILJS_PUBLIC_KEY'],
-          'template_params': {
-            'user_email': email,
-            'otp_code': otp,
-          },
-        }),
-      );
-      developer.log('EmailJS Response: ${response.statusCode} - ${response.body}');
-    } catch (e) {
-      developer.log('EmailJS Error: $e');
+    final response = await http.post(
+      Uri.parse('https://api.emailjs.com/api/v1.0/email/send'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'service_id': dotenv.env['EMAILJS_SERVICE_ID'],
+        'template_id': dotenv.env['EMAILJS_TEMPLATE_ID'],
+        'user_id': dotenv.env['EMAILJS_PUBLIC_KEY'],
+        'template_params': {
+          'email': email,
+          'otp_code': otp,
+        },
+      }),
+    );
+    developer.log('EmailJS Response: ${response.statusCode} - ${response.body}');
+    if (response.statusCode != 200) {
+      throw Exception('Failed to send OTP email: ${response.body}');
     }
   }
 
