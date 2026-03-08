@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../widgets/ui_helpers.dart';
 import 'directory_screen.dart';
 import 'my_listings_screen.dart';
 import 'map_view_screen.dart';
@@ -30,21 +28,21 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (i) => setState(() => _currentIndex = i),
-        items: [
+        items: const [
           BottomNavigationBarItem(
-            icon: const Icon(Icons.list_rounded),
+            icon: Icon(Icons.list_rounded),
             label: 'Directory',
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.bookmark_rounded),
+            icon: Icon(Icons.bookmark_rounded),
             label: 'My Listings',
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.map_rounded),
+            icon: Icon(Icons.map_rounded),
             label: 'Map View',
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.settings_rounded),
+            icon: Icon(Icons.settings_rounded),
             label: 'Settings',
           ),
         ],
