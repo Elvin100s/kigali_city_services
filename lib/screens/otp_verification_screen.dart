@@ -107,9 +107,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     children: List.generate(6, (index) {
                       final hasValue = _controllers[index].text.isNotEmpty;
                       return Container(
-                        width: 45,
+                        width: 43,
                         height: 55,
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        margin: const EdgeInsets.symmetric(horizontal: 3),
                         decoration: BoxDecoration(
                           color: kSurface2,
                           borderRadius: BorderRadius.circular(12),

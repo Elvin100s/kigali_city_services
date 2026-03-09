@@ -20,6 +20,8 @@ class _EditListingScreenState extends State<EditListingScreen> {
   late TextEditingController _descController;
   late TextEditingController _addressController;
   late TextEditingController _phoneController;
+  late TextEditingController _latController;
+  late TextEditingController _lngController;
   late String _category;
 
   @override
@@ -29,6 +31,8 @@ class _EditListingScreenState extends State<EditListingScreen> {
     _descController = TextEditingController(text: widget.listing.description);
     _addressController = TextEditingController(text: widget.listing.address);
     _phoneController = TextEditingController(text: widget.listing.phoneNumber);
+    _latController = TextEditingController(text: widget.listing.latitude.toString());
+    _lngController = TextEditingController(text: widget.listing.longitude.toString());
     _category = widget.listing.category;
   }
 
@@ -38,6 +42,8 @@ class _EditListingScreenState extends State<EditListingScreen> {
     _descController.dispose();
     _addressController.dispose();
     _phoneController.dispose();
+    _latController.dispose();
+    _lngController.dispose();
     super.dispose();
   }
 
@@ -92,7 +98,38 @@ class _EditListingScreenState extends State<EditListingScreen> {
             TextFormField(
               controller: _phoneController,
               decoration: const InputDecoration(labelText: 'Phone Number'),
+              keyboardType: TextInputType.phone,
               validator: (v) => v!.isEmpty ? 'Required' : null,
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _latController,
+                    decoration: const InputDecoration(labelText: 'Latitude'),
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                    validator: (v) {
+                      if (v!.isEmpty) return 'Required';
+                      if (double.tryParse(v) == null) return 'Invalid number';
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextFormField(
+                    controller: _lngController,
+                    decoration: const InputDecoration(labelText: 'Longitude'),
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                    validator: (v) {
+                      if (v!.isEmpty) return 'Required';
+                      if (double.tryParse(v) == null) return 'Invalid number';
+                      return null;
+                    },
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 24),
             kGradientButton(
@@ -105,6 +142,8 @@ class _EditListingScreenState extends State<EditListingScreen> {
                     'description': _descController.text,
                     'address': _addressController.text,
                     'phoneNumber': _phoneController.text,
+                    'latitude': double.parse(_latController.text),
+                    'longitude': double.parse(_lngController.text),
                   });
                   if (context.mounted) Navigator.pop(context);
                 }

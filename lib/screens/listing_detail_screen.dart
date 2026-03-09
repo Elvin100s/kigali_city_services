@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../models/listing_model.dart';
+import '../providers/listings_provider.dart';
 import '../widgets/ui_helpers.dart';
 import 'edit_listing_screen.dart';
 
@@ -72,7 +74,7 @@ class ListingDetailScreen extends StatelessWidget {
               _circleButton(Icons.arrow_back_rounded, Colors.white,
                   () => Navigator.pop(context)),
               const Spacer(),
-              if (canEdit)
+              if (canEdit) ...[
                 _circleButton(Icons.edit_rounded, kGold, () {
                   Navigator.push(
                     context,
@@ -80,6 +82,38 @@ class ListingDetailScreen extends StatelessWidget {
                         builder: (_) => EditListingScreen(listing: listing)),
                   );
                 }),
+                const SizedBox(width: 8),
+                _circleButton(Icons.delete_rounded, Colors.redAccent, () async {
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      backgroundColor: kSurface,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
+                      title: Text('Delete Listing',
+                          style: GoogleFonts.playfairDisplay(color: kCream)),
+                      content: Text('Are you sure you want to delete "${listing.name}"?',
+                          style: GoogleFonts.dmSans(color: kMuted)),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: Text('Cancel',
+                              style: GoogleFonts.dmSans(color: kCream)),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, true),
+                          child: Text('Delete',
+                              style: GoogleFonts.dmSans(color: Colors.redAccent)),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirmed == true && context.mounted) {
+                    await context.read<ListingsProvider>().deleteListing(listing.id!);
+                    if (context.mounted) Navigator.pop(context);
+                  }
+                }),
+              ],
             ],
           ),
         ),
@@ -96,8 +130,8 @@ class ListingDetailScreen extends StatelessWidget {
               ),
               children: [
                 TileLayer(
-                  urlTemplate:
-                      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                  subdomains: const ['a', 'b', 'c', 'd'],
                   userAgentPackageName: 'com.example.kigali_city_services',
                 ),
                 MarkerLayer(
@@ -230,7 +264,7 @@ class ListingDetailScreen extends StatelessWidget {
                           'Get Directions',
                           () async {
                             final url = Uri.parse(
-                                'https://www.google.com/maps/dir/?api=1&destination=${listing.latitude},${listing.longitude}');
+                                'https://www.google.com/maps/dir/?api=1&origin=My+Location&destination=${listing.latitude},${listing.longitude}&travelmode=driving');
                             if (await canLaunchUrl(url)) {
                               await launchUrl(url,
                                   mode: LaunchMode.externalApplication);

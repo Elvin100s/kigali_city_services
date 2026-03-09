@@ -168,7 +168,8 @@ class _MapViewScreenState extends State<MapViewScreen> {
                 ),
                 children: [
                   TileLayer(
-                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                    subdomains: const ['a', 'b', 'c', 'd'],
                     userAgentPackageName: 'com.example.kigali_city_services',
                   ),
                   MarkerLayer(markers: _buildMarkers(listings)),
